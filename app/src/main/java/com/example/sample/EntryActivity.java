@@ -49,7 +49,7 @@ public class EntryActivity extends AppCompatActivity {
         text_size = 18;
         increase = true;
 
-        SharedPreferences sharedPrefs = getSharedPreferences("minesweeper_data",MODE_PRIVATE);
+        SharedPreferences sharedPrefs = getSharedPreferences("minesweeper_data", MODE_PRIVATE);
         Boolean soundOn = sharedPrefs.getBoolean("Sound", true);
         mplayer = MediaPlayer.create(getApplicationContext(), R.raw.entry_music);
 
@@ -82,6 +82,7 @@ public class EntryActivity extends AppCompatActivity {
         if((value == false) && (mplayer.isPlaying()))
         {
             mplayer.stop();
+            mplayer.release();
         }
         else if((value == true) && (!mplayer.isPlaying()))
         {

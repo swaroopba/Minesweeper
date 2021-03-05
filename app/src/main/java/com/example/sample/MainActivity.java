@@ -54,28 +54,6 @@ public class MainActivity extends AppCompatActivity {
     Set<String> previousOpenedButtons;
 
     @Override
-    protected void onStop() {
-        super.onStop();
-
-        SharedPreferences.Editor editor = sharedPrefs.edit();
-
-        Iterator<Pair<Integer, Integer>> iter = bombSet.iterator();
-        int i=0;
-        while(iter.hasNext())
-        {
-            i++;
-            Pair<Integer, Integer> bombPos = iter.next();
-            editor.putInt("bombX"+i, bombPos.first);
-            editor.putInt("bombY"+i, bombPos.second);
-        }
-        editor.putStringSet("openedButtons", previousOpenedButtons);
-        editor.putBoolean("previousStateAvailable", true);
-        editor.putLong("remainingTime", totalTimeOut-completedTime);
-        editor.commit();
-
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
         super.onCreate(savedInstanceState);
@@ -157,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             for (int iter = 0; iter < numOfBombs; iter++) {
-                Pair<Integer, Integer> num = new Pair<Integer, Integer>(iter, 0);
+                Pair<Integer, Integer> num = new Pair<Integer, Integer>(random.nextInt(gridRows), random.nextInt(gridColumn));
                 if (bombSet.contains(num)) {
                     iter--;
                 } else {
@@ -270,17 +248,8 @@ public class MainActivity extends AppCompatActivity {
     private String getTime(Integer seconds)
     {
         String result = "";
-        Integer time = seconds/(60*60);
-        if(time<10)
-        {
-            result+="0";
-        }
-        result+=time.toString();
-        seconds=seconds%(60*60);
 
-        result+=":";
-
-        time = seconds/60;
+        Integer time = seconds/60;
         if(time<10){
             result+="0";
         }
@@ -475,10 +444,17 @@ public class MainActivity extends AppCompatActivity {
                 mplayer = MediaPlayer.create(getApplicationContext(), R.raw.happy_end);
                 mplayer.start();
             }
+            mplayer.release();
         }
         Intent end_intent = new Intent(this, FinishActivity.class);
         end_intent.putExtra("message", message);
         end_intent.putExtra("status", status);
+
+        SharedPreferences.Editor edit = sharedPrefs.edit();
+        edit.putBoolean("previousStateAvailable", false);
+        edit.commit();
+
+
         startActivity(end_intent);
         finish();
     }
@@ -580,6 +556,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void homePressed(View view)
     {
+        countTimer.cancel();
+
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+
+        Iterator<Pair<Integer, Integer>> iter = bombSet.iterator();
+        int i=0;
+        while(iter.hasNext())
+        {
+            i++;
+            Pair<Integer, Integer> bombPos = iter.next();
+            editor.putInt("bombX"+i, bombPos.first);
+            editor.putInt("bombY"+i, bombPos.second);
+        }
+        editor.putStringSet("openedButtons", previousOpenedButtons);
+        editor.putBoolean("previousStateAvailable", true);
+        editor.putLong("remainingTime", totalTimeOut-completedTime);
+        editor.commit();
+
         Intent homeIntent = new Intent(this, EntryActivity.class);
         startActivity(homeIntent);
         finish();
@@ -587,6 +581,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void restartPressed(View view)
     {
+        countTimer.cancel();
+        SharedPreferences.Editor edit = sharedPrefs.edit();
+        edit.putBoolean("previousStateAvailable", false);
+        edit.commit();
         Intent restartIntent = new Intent(this, MainActivity.class);
         startActivity(restartIntent);
         finish();
